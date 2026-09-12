@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "flypole"
+version = "0.1.0"
+description = "Incremental experiments using the MaleCNS connectome with CartPole"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "gymnasium>=1.2,<2",
+    "neuprint-python>=0.6.3,<0.7",
+    "numpy>=1.26,<3",
+    "pandas>=2.2,<4",
+    "scipy>=1.13,<2",
+    "pygame>=2.6,<3",
+]
+
+[project.scripts]
+flypole = "flypole.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8,<10",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/flypole"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
