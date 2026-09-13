@@ -102,7 +102,6 @@ class Viewer:
         pygame.draw.line(self.surface, (58, 70, 86), (600, 85), (600, 600))
         self.text("FlyPole — fixed neural connectivity, trained linear readout", (25, 20))
         self.text(status, (25, 52))
-        self.text("Fly avatar • CartPole-v1 physics", (25, 100))
         self.text(f"reward {reward:.0f}/500    fly {'RIGHT' if action else 'LEFT'}", (25, 135))
         x = int(300 + float(observation[0])*95)
         angle = float(observation[2])
@@ -139,7 +138,6 @@ class Viewer:
                     pygame.draw.circle(self.surface, (70, 205, 235) if node in inputs else (215, 140, 240), self.positions[int(node)], 7, 1)
             self.text(f"Sample: {len(self.nodes)} neurons, {len(self.edges)} edges", (625, 560), small=True)
             self.text("Cyan rings: sensory input | purple: downstream readout", (625, 583), small=True)
-        self.text("Engineered encoding, dynamics, readout and RL. Abstract layout; no anatomy implied.", (25, 620), small=True)
         if not self.offscreen:
             pygame.display.flip()
             if self.fps:
