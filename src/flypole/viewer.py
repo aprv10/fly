@@ -7,6 +7,52 @@ import numpy as np
 import pygame
 
 
+def _draw_fly(surface, x, y, action, step):
+    """Draw a small fly avatar at the CartPole cart position."""
+    direction = 1 if action else -1
+    flap = 4 if step % 4 < 2 else -3
+
+    # Translucent wings sit behind the body and flap as the episode advances.
+    wing_layer = pygame.Surface((120, 90), pygame.SRCALPHA)
+    pygame.draw.ellipse(wing_layer, (153, 220, 238, 120), (10, 8 + flap, 48, 25))
+    pygame.draw.ellipse(wing_layer, (153, 220, 238, 120), (62, 8 - flap, 48, 25))
+    pygame.draw.ellipse(wing_layer, (214, 244, 250, 130), (21, 17 + flap, 32, 10), 2)
+    pygame.draw.ellipse(wing_layer, (214, 244, 250, 130), (67, 17 - flap, 32, 10), 2)
+    surface.blit(wing_layer, (x - 60, y - 55))
+
+    leg_color = (190, 143, 65)
+    for side in (-1, 1):
+        for offset in (-8, 1, 10):
+            hip = (x + side * 5, y + offset // 2)
+            knee = (x + side * (18 + abs(offset)), y + 15 + offset)
+            foot = (x + side * (29 + abs(offset)), y + 25)
+            pygame.draw.lines(surface, leg_color, False, (hip, knee, foot), 2)
+
+    abdomen_center = (x - direction * 17, y)
+    head_center = (x + direction * 20, y - 2)
+    pygame.draw.ellipse(
+        surface, (211, 159, 62), (abdomen_center[0] - 20, y - 11, 40, 22)
+    )
+    for stripe in (-10, 0, 10):
+        stripe_x = abdomen_center[0] + direction * stripe
+        pygame.draw.line(surface, (74, 57, 37), (stripe_x, y - 9), (stripe_x, y + 9), 3)
+    pygame.draw.circle(surface, (91, 67, 42), (x, y), 14)
+    pygame.draw.circle(surface, (115, 78, 48), head_center, 12)
+
+    eye_x = head_center[0] + direction * 6
+    for eye_y in (y - 7, y + 3):
+        pygame.draw.circle(surface, (203, 62, 61), (eye_x, eye_y), 4)
+        pygame.draw.circle(surface, (255, 164, 102), (eye_x + direction, eye_y - 1), 1)
+    for antenna_y in (-6, 3):
+        pygame.draw.line(
+            surface,
+            leg_color,
+            (head_center[0] + direction * 8, y + antenna_y),
+            (head_center[0] + direction * 18, y + antenna_y - 10),
+            2,
+        )
+
+
 class Viewer:
     def __init__(self, brain, fps=50, stride=1, offscreen=False):
         pygame.font.init()
@@ -56,16 +102,17 @@ class Viewer:
         pygame.draw.line(self.surface, (58, 70, 86), (600, 85), (600, 600))
         self.text("FlyPole — fixed neural connectivity, trained linear readout", (25, 20))
         self.text(status, (25, 52))
-        self.text("CartPole-v1", (25, 100))
-        self.text(f"reward {reward:.0f}/500    action {'RIGHT' if action else 'LEFT'}", (25, 135))
+        self.text("Fly avatar • CartPole-v1 physics", (25, 100))
+        self.text(f"reward {reward:.0f}/500    fly {'RIGHT' if action else 'LEFT'}", (25, 135))
         x = int(300 + float(observation[0])*95)
         angle = float(observation[2])
-        pygame.draw.line(self.surface, (120, 134, 154), (30, 450), (570, 450), 2)
-        pygame.draw.rect(self.surface, (90, 163, 218), (x-32, 411, 64, 32), border_radius=4)
-        pygame.draw.circle(self.surface, (211, 222, 238), (x-20, 447), 6)
-        pygame.draw.circle(self.surface, (211, 222, 238), (x+20, 447), 6)
-        endpoint = (int(x+150*np.sin(angle)), int(412-150*np.cos(angle)))
-        pygame.draw.line(self.surface, (255, 178, 75), (x, 412), endpoint, 9)
+        pygame.draw.line(self.surface, (65, 78, 94), (30, 461), (570, 461), 1)
+        pivot = (x, 407)
+        endpoint = (int(x+150*np.sin(angle)), int(407-150*np.cos(angle)))
+        pygame.draw.line(self.surface, (255, 178, 75), pivot, endpoint, 9)
+        pygame.draw.circle(self.surface, (255, 217, 132), endpoint, 6)
+        _draw_fly(self.surface, x, 425, action, step)
+        pygame.draw.circle(self.surface, (235, 196, 105), pivot, 5)
         for i, name in enumerate(("position", "velocity", "angle", "angular velocity")):
             self.text(f"{name}: {observation[i]:+.3f}", (30, 485+22*i), small=True)
         if self.brain.graph is None:

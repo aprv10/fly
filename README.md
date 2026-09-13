@@ -18,7 +18,8 @@ uv run flypole watch runs/fly/best.npz --episodes 5
 Omit `--live` for faster training. During training the viewer shows the best-policy
 rollout after each update, with iteration progress. During evaluation it displays
 every step at 50 FPS. Close the window or press Escape to stop; checkpoints already
-written remain available. The left view is drawn from the actual Gymnasium state.
+written remain available. The left view draws a fly avatar balancing the pole from
+the actual Gymnasium CartPole state; the environment physics are still CartPole-v1.
 The right view samples at most 240 neurons and 350 connections. Layout is abstract,
 not anatomical; active means activity greater than 0.0001. Colors scale to the
 current frame maximum. Cyan rings mark inputs; purple rings mark readout neurons.
