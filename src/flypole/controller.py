@@ -33,18 +33,36 @@ class Brain:
         if not 1000 <= n <= 5000:
             raise ValueError("controller graphs must contain 1000–5000 neurons")
         self.weights = outgoing_normalized(graph.adjacency)
+        self.steps = int(graph.manifest.get("recommended_propagation_steps", 2))
         rng = np.random.default_rng(seed)
         if groups is None:
-            eligible = np.flatnonzero(np.asarray(graph.adjacency.sum(axis=0)).ravel() > 0)
-            if len(eligible) < 64:
-                raise ValueError("graph needs at least 64 neurons with outgoing connections")
-            groups = rng.choice(eligible, 64, replace=False).reshape(8, 8)
+            biological_groups = graph.manifest.get("input_groups")
+            if biological_groups:
+                index = {int(body_id): i for i, body_id in enumerate(graph.neurons["bodyId"])}
+                try:
+                    groups = [[index[int(body_id)] for body_id in biological_groups[channel]] for channel in CHANNELS]
+                except KeyError as error:
+                    raise ValueError(f"an anatomical input neuron is missing from the graph: {error}") from error
+                if len({len(group) for group in groups}) != 1 or not groups[0]:
+                    raise ValueError("anatomical input groups must be nonempty and equal-sized")
+            else:
+                eligible = np.flatnonzero(np.asarray(graph.adjacency.sum(axis=0)).ravel() > 0)
+                if len(eligible) < 64:
+                    raise ValueError("graph needs at least 64 neurons with outgoing connections")
+                groups = rng.choice(eligible, 64, replace=False).reshape(8, 8)
         self.groups = np.asarray(groups, dtype=int)
         probes = np.stack([self._propagate(row) for row in np.eye(8)])
         strength = probes.max(axis=0)
         strength[self.groups.ravel()] = 0
         if features is None:
-            features = np.argsort(-strength, kind="stable")[:64]
+            output_ids = graph.manifest.get("output_population")
+            candidates = np.arange(n)
+            if output_ids:
+                index = {int(body_id): i for i, body_id in enumerate(graph.neurons["bodyId"])}
+                candidates = np.asarray([index[int(body_id)] for body_id in output_ids if int(body_id) in index])
+                if not len(candidates):
+                    raise ValueError("anatomical output population is missing from the graph")
+            features = candidates[np.argsort(-strength[candidates], kind="stable")[:64]]
             features = features[strength[features] > 1e-9]
         self.features = np.asarray(features, dtype=int)
         if not len(self.features):
@@ -57,7 +75,7 @@ class Brain:
         drive = np.zeros_like(self.activity)
         drive[self.groups] = np.asarray(channels)[:, None]
         state = np.tanh(drive)
-        for _ in range(2):
+        for _ in range(self.steps):
             state = np.tanh(drive + 0.2 * state + self.weights @ state)
         self.activity = state
         return state.copy()

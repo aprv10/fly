@@ -1,6 +1,7 @@
 .venv/
 .env
 .env.*
+!.env.example
 .uv-cache/
 runs/
 __pycache__/

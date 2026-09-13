@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "dataset": "male-cns:v1.0",
+  "description": "Engineered CartPole channels mapped onto annotated bilateral MaleCNS sensory populations.",
+  "input_group_size": 16,
+  "input_groups": [
+    {
+      "channel": "position+",
+      "biological_proxy": "right visual sensory population",
+      "criteria": {"superclass": "ol_sensory", "class": "visual", "rootSide": "R"},
+      "offset": 0
+    },
+    {
+      "channel": "position-",
+      "biological_proxy": "left visual sensory population",
+      "criteria": {"superclass": "ol_sensory", "class": "visual", "rootSide": "L"},
+      "offset": 0
+    },
+    {
+      "channel": "velocity+",
+      "biological_proxy": "second non-overlapping right visual sensory population",
+      "criteria": {"superclass": "ol_sensory", "class": "visual", "rootSide": "R"},
+      "offset": 16
+    },
+    {
+      "channel": "velocity-",
+      "biological_proxy": "second non-overlapping left visual sensory population",
+      "criteria": {"superclass": "ol_sensory", "class": "visual", "rootSide": "L"},
+      "offset": 16
+    },
+    {
+      "channel": "angle+",
+      "biological_proxy": "right wind/gravity mechanosensory population",
+      "criteria": {"superclass": "cb_sensory", "class": "mechanosensory", "subclass": "wind_gravity", "rootSide": "R"},
+      "offset": 0
+    },
+    {
+      "channel": "angle-",
+      "biological_proxy": "left wind/gravity mechanosensory population",
+      "criteria": {"superclass": "cb_sensory", "class": "mechanosensory", "subclass": "wind_gravity", "rootSide": "L"},
+      "offset": 0
+    },
+    {
+      "channel": "angular_velocity+",
+      "biological_proxy": "right haltere proprioceptive sensory-ascending population",
+      "criteria": {"superclass": "sensory_ascending", "class": "mechanosensory_proprioceptive", "subclass": "haltere", "rootSide": "R"},
+      "offset": 0
+    },
+    {
+      "channel": "angular_velocity-",
+      "biological_proxy": "left haltere proprioceptive sensory-ascending population",
+      "criteria": {"superclass": "sensory_ascending", "class": "mechanosensory_proprioceptive", "subclass": "haltere", "rootSide": "L"},
+      "offset": 0
+    }
+  ],
+  "output_population": {
+    "name": "descending_neurons",
+    "biological_role": "brain-to-ventral-nerve-cord descending feature candidates",
+    "criteria": {"superclass": "descending_neuron"},
+    "limit": 256
+  },
+  "selection": {
+    "forward_hops": 3,
+    "backward_hops": 3,
+    "layer_width": 2500,
+    "recommended_propagation_steps": 6
+  }
+}

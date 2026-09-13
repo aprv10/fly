@@ -68,12 +68,16 @@ def train(output, graph_path=None, variant="real", seed=0, iterations=60,
     output.mkdir(parents=True, exist_ok=True)
     if brain.graph is not None:
         save_connectome(brain.graph, output / "graph")
+    anatomical = brain.graph is not None and bool(brain.graph.manifest.get("input_groups"))
     metadata = dict(version=1, variant=variant, seed=seed, iterations=iterations,
                     directions=directions, learning_rate=learning_rate, noise=noise,
                     algorithm="ARS-style two-sided parameter search",
-                    dynamics="two tanh steps, outgoing normalized, per-observation reset",
-                    sensory_encoding="eight engineered signed populations; fixed scales",
-                    readout="trainable linear binary logit; fixed graph and neuron selection",
+                    dynamics=f"{getattr(brain, 'steps', 0)} tanh steps, outgoing normalized, per-observation reset",
+                    sensory_encoding=("eight engineered signed channels mapped to annotated MaleCNS sensory populations"
+                                      if anatomical else "eight engineered signed populations; fixed scales"),
+                    readout=("trainable linear binary logit over annotated descending-neuron candidates; fixed graph"
+                             if anatomical else "trainable linear binary logit; fixed graph and neuron selection"),
+                    anatomical_populations=anatomical,
                     dataset="none" if brain.graph is None else brain.graph.manifest.get("dataset"),
                     validation_seeds=list(range(100000, 100005)))
     (output / "config.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")

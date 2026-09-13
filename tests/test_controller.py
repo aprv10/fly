@@ -33,3 +33,29 @@ def test_controls_preserve_size_weights_and_outdegree():
         assert control.adjacency.nnz == g.adjacency.nnz
         np.testing.assert_array_equal(np.sort(control.adjacency.data), np.sort(g.adjacency.data))
     np.testing.assert_array_equal(variant_graph(g, "shuffled").adjacency.getnnz(axis=0), g.adjacency.getnnz(axis=0))
+
+
+def test_anatomical_manifest_selects_saved_inputs_and_descending_features():
+    n = 1000
+    inputs = np.arange(8)
+    outputs = np.arange(8, 16)
+    rows = outputs
+    columns = inputs
+    weights = np.ones(8, dtype=np.float32)
+    adjacency = sparse.coo_matrix((weights, (rows, columns)), shape=(n, n)).tocsr()
+    manifest = {
+        "dataset": "male-cns:v1.0",
+        "input_groups": {channel: [int(index)] for channel, index in zip(
+            ["position+", "position-", "velocity+", "velocity-", "angle+", "angle-", "angular_velocity+", "angular_velocity-"],
+            inputs,
+        )},
+        "output_population": outputs.tolist(),
+        "recommended_propagation_steps": 4,
+    }
+    g = SparseConnectome(pd.DataFrame({"bodyId": np.arange(n)}), adjacency, manifest)
+
+    brain = Brain(g)
+
+    np.testing.assert_array_equal(brain.groups.ravel(), inputs)
+    assert set(brain.features) == set(outputs)
+    assert brain.steps == 4
