@@ -45,3 +45,12 @@ def test_missing_token_has_actionable_error(monkeypatch) -> None:
     with pytest.raises(RuntimeError, match=TOKEN_ENVIRONMENT_VARIABLE):
         create_client()
 
+
+def test_client_does_not_require_dataset_discovery(monkeypatch) -> None:
+    from neuprint import Client
+
+    Client.DATASETS_CACHE.clear()
+    client = create_client(token="local-test-token")
+
+    assert client.dataset == "male-cns:v1.0"
+    assert "male-cns:v1.0" in Client.DATASETS_CACHE["https://neuprint.janelia.org"]

@@ -144,6 +144,8 @@ The command queries `male-cns:v1.0` through neuPrint. It first selects the 2,000
 neurons with the largest total pre- plus postsynaptic counts, then downloads only
 aggregate connections within that selection. It does not download skeletons,
 meshes, image volumes, individual synapses, or the complete connection table.
+FlyPole uses the fixed published dataset name directly, so a temporary failure of
+neuPrint's server-wide dataset-list endpoint does not block this query.
 
 The output directory contains:
 

@@ -20,7 +20,13 @@ MAX_SUBGRAPH_SIZE = 5_000
 
 
 def create_client(*, token: str | None = None) -> Any:
-    """Create an authenticated neuPrint client without persisting credentials."""
+    """Create a client for the known MaleCNS snapshot.
+
+    The published dataset name is fixed here, so seed neuprint-python's discovery
+    cache.  This avoids making every run depend on the server-wide dataset-list
+    endpoint, which is unrelated to our bounded MaleCNS query and can be
+    temporarily unavailable.
+    """
     from neuprint import Client
 
     credential = token or os.environ.get(TOKEN_ENVIRONMENT_VARIABLE)
@@ -29,6 +35,8 @@ def create_client(*, token: str | None = None) -> Any:
             f"No neuPrint token found. Set {TOKEN_ENVIRONMENT_VARIABLE} in your "
             "environment after copying the token from your neuPrint account page."
         )
+    known_datasets = Client.DATASETS_CACHE.setdefault(NEUPRINT_SERVER, {})
+    known_datasets.setdefault(MALECNS_DATASET, {})
     return Client(NEUPRINT_SERVER, dataset=MALECNS_DATASET, token=credential)
 
 
@@ -118,4 +126,3 @@ def download_subgraph(
         },
     )
     return save_connectome(graph, output)
-
